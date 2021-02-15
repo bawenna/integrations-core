@@ -871,7 +871,7 @@ class AgentCheck(object):
         # type: () -> None
         """
         This method is called when the check in unscheduled by the agent. This
-        is SIGNAL that the check is being unscheduled and can be called while
+        signals that the check is being unscheduled and can be called while
         the check is running. It's up to the python implementation to make sure
         cancel is thread safe and won't block.
         """
