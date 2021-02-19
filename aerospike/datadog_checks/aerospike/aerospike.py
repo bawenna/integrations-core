@@ -40,6 +40,20 @@ AEROSPIKE_CAP_MAP = {SINDEX_METRIC_TYPE: MAX_AEROSPIKE_SINDEXS, SET_METRIC_TYPE:
 AEROSPIKE_CAP_CONFIG_KEY_MAP = {SINDEX_METRIC_TYPE: "max_sindexs", SET_METRIC_TYPE: "max_sets"}
 ENABLED_VALUES = {'true', 'on', 'enable', 'enabled'}
 DISABLED_VALUES = {'false', 'off', 'disable', 'disabled'}
+XDR_METRIC_MAP = {
+    'nodes': 'dc_as_size',
+    'retry_dest': ['dc_ship_destination_error', 'xdr_ship_destination_error'],
+    'in_progress': ['dc_ship_inflight_objects', 'xdr_ship_inflight_objects'],
+    'latency_ms': ['dc_ship_latency_avg', 'xdr_ship_latency_avg'],
+    'lag': ['dc_timelag', 'xdr_timelag'],
+    'hot_keys': 'xdr_hotkey_skip',
+    'not_found': 'xdr_read_notfound',
+    'compression_ratio': 'xdr_ship_compression_avg_pct',
+    'abandoned': 'xdr_ship_destination_permanent_error',
+    'in_queue': 'xdr_ship_outstanding_objects',
+    'retry_conn_reset': 'xdr_ship_source_error',
+    'success': 'xdr_ship_success',
+}
 
 V5_1 = (5, 1, 0, 0)
 V5_0 = (5, 0, 0, 0)
@@ -175,6 +189,13 @@ class AerospikeCheck(AgentCheck):
         if self._required_datacenters:
             for dc in self._required_datacenters:
                 data = self.get_info('get-stats:context=xdr;dc={}'.format(dc))
+                datacenter_tags = ['datacenter:{}'.format(dc)]
+                for item in data:
+                    tags = ['datacenter_host:{}', 'datacenter_port:{}']
+                    metric = item.split("=")
+                    key = metric[0]
+                    value = metric[1]
+                    self.send(DATACENTER_METRIC_TYPE, key, value, tags)
         else:
             self.log.debug("No datacenters to collect XDR metrics from")
 
